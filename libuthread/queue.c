@@ -4,42 +4,148 @@
 
 #include "queue.h"
 
+
+/* Node */
+
+typedef struct node* node_t;
+
+/*
+ * node_t - Node type
+ *
+ * A node is a data structure holding one data value and a link to another node.
+ */
+struct node {
+    void* data;
+	node_t next;
+};
+
+/**
+ * Allocate a node with data.
+ * 
+ * Create a new object of type 'struct node' and return its address.
+ *
+ * @param data: Address of data item.
+ * @return Pointer to new empty node. NULL in case of failure when allocating
+ * the new node.
+ */
+node_t node_create(void* data) {
+	node_t node = malloc(sizeof(struct node));
+	if (node == NULL) {
+		return NULL; // memory allocation error
+	}
+
+	node->data = data;
+	node->next = NULL;
+	return node;
+}
+
+/**
+ * Deallocate a node.
+ * 
+ * Deallocate the memory associated to the node object pointed by `node`.
+ *
+ * @param node Node to deallocate.
+ * @return -1 if `node` is NULL. 0 if `node` was successfully destroyed.
+ */
+int node_destroy(node_t node)
+{
+	if (node == NULL) {
+		return -1;
+	}
+
+	free(node);
+
+	return 0;
+}
+
+/* Queue */
+
 struct queue {
-	/* TODO Phase 1 */
+	node_t front;
+	node_t back;
+	int size;
 };
 
 queue_t queue_create(void)
 {
-	/* TODO Phase 1 */
+	queue_t queue = malloc(sizeof(struct queue));
+	if (queue == NULL) {
+		return NULL; // memory allocation error
+	}
+
+	queue->front = queue->back = NULL;
+	queue->size = 0;
+	return queue;
 }
 
 int queue_destroy(queue_t queue)
 {
-	/* TODO Phase 1 */
+	if (queue == NULL || queue->size != 0) {
+		return -1; // queue must be empty before deallocating
+	}
+
+	free(queue);
+
+	return 0;
 }
 
 int queue_enqueue(queue_t queue, void *data)
 {
-	/* TODO Phase 1 */
+	if (queue == NULL || data == NULL) {
+		return -1;
+	}
+
+	node_t newNode = node_create(data);
+	if (newNode == NULL) {
+		// memory allocation error
+		return -1;
+	}
+
+	// add new node to back of queue
+	queue->back->next = newNode;
+	// set back of queue to new node
+	queue->back = newNode;
+
+	queue->size++;
+	
+	return 0;
 }
 
 int queue_dequeue(queue_t queue, void **data)
 {
-	/* TODO Phase 1 */
+	if (queue == NULL || data == NULL || queue->size == 0) {
+		return -1; // queue must contain node before dequeueing
+	}
+
+	node_t front = queue->front;
+
+	// set front of queue to next node
+	queue->front = front->next;
+	// store node data in output
+	*data = front->data;
+	// delete front node
+	node_destroy(front);
+
+	queue->size--;
+
+	return 0;
 }
 
 int queue_delete(queue_t queue, void *data)
 {
 	/* TODO Phase 1 */
+	return 0;
 }
 
 int queue_iterate(queue_t queue, queue_func_t func)
 {
 	/* TODO Phase 1 */
+	return 0;
 }
 
 int queue_length(queue_t queue)
 {
 	/* TODO Phase 1 */
+	return 0;
 }
 
