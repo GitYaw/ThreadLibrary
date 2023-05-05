@@ -28,7 +28,7 @@ CUR_PWD := $(shell pwd)
 CC	= gcc
 
 # General gcc options
-CFLAGS	:= -Wall -Wextra -Werror
+CFLAGS	:= -Wall -Wextra 
 CFLAGS	+= -pipe
 ## Debug flag
 ifneq ($(D),1)

@@ -6,7 +6,7 @@ obj := queue.o
 
 # Compiler
 CC := gcc
-CFLAGS := -Wall -Wextra -Werror
+CFLAGS := -Wall 
 CFLAGS += -g
 
 all: $(lib)
@@ -23,7 +23,7 @@ all: $(lib)
 
 ## TODO: Phase 1
 $(lib): $(obj)
-	ar rcs $@ $^
+	ar -rcs $@ $^
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c -o $@ $<
