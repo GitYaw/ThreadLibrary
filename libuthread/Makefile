@@ -1,3 +1,15 @@
+# scroll down for actual makefile
+
+queue.out: queue_tester.c queue.o
+	clear
+	$(CC) $(CFLAGS) -o $@ $^
+	./$@
+
+c:
+	clear
+	make
+
+
 ## MAKEFILE ##
 
 # Target library
