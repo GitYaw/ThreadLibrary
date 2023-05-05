@@ -102,7 +102,13 @@ int queue_enqueue(queue_t queue, void *data)
 	}
 
 	// add new node to back of queue
-	queue->back->next = newNode;
+	if (queue->back == NULL) {
+		// empty queue
+		queue->front = newNode;
+	} else {
+		// non-empty queue
+		queue->back->next = newNode;
+	}
 	// set back of queue to new node
 	queue->back = newNode;
 
