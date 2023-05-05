@@ -137,21 +137,56 @@ int queue_dequeue(queue_t queue, void **data)
 	return 0;
 }
 
+/*
+ * queue_delete - Delete data item
+ * @queue: Queue in which to delete item
+ * @data: Data to delete
+ *
+ * Find in queue @queue, the first (ie oldest) item equal to @data and delete
+ * this item.
+ *
+ * Return: -1 if @queue or @data are NULL, of if @data was not found in the
+ * queue. 0 if @data was found and deleted from @queue.
+ */
 int queue_delete(queue_t queue, void *data)
 {
 	/* TODO Phase 1 */
 	return 0;
 }
 
+/*
+ * queue_iterate - Iterate through a queue
+ * @queue: Queue to iterate through
+ * @func: Function to call on each queue item
+ *
+ * This function iterates through the items in the queue @queue, from the oldest
+ * item to the newest item, and calls the given callback function @func on each
+ * item. The callback function receives the current data item as parameter.
+ *
+ * Note that this function should be resistant to data items being deleted
+ * as part of the iteration (ie in @func).
+ *
+ * Return: -1 if @queue or @func are NULL, 0 otherwise.
+ */
 int queue_iterate(queue_t queue, queue_func_t func)
-{
-	/* TODO Phase 1 */
+{	 
+	if (queue == NULL || func == NULL) {
+		return -1; // queue must contain node before dequeueing
+	}
+
+	node_t node = queue->front;
+	while (node != NULL) {
+		// call callback function on data item
+		func(queue, node->data);
+		// proceed to next node
+		node = node->next;
+	}
+	
 	return 0;
 }
 
 int queue_length(queue_t queue)
 {
-	/* TODO Phase 1 */
-	return 0;
+	return queue->size;
 }
 
