@@ -4,141 +4,223 @@
 
 // Looked at header file to find API documentation
 #include "queue.h"
-/* TODO Phase 1, for every function */
+
+/*---------------- Node ---------------- */
+
+typedef struct node* node_t;
+
+/*
+ * node_t - Node type
+ *
+ * A node is a data structure holding one data value and a link to another node.
+ */
+struct node {
+    void* data;
+	node_t next;
+};
+
+/**
+ * Allocate a node with data.
+ * 
+ * Create a new object of type 'struct node' and return its address.
+ *
+ * @param data: Address of data item.
+ * @return Pointer to new empty node. NULL in case of failure when allocating
+ * the new node.
+ */
+node_t node_create(void* data) {
+	node_t node = malloc(sizeof(struct node));
+	if (node == NULL) {
+		return NULL; // memory allocation error
+	}
+
+	node->data = data;
+	node->next = NULL;
+	return node;
+}
+
+/**
+ * Deallocate a node.
+ * 
+ * Deallocate the memory associated to the node object pointed by `node`.
+ *
+ * @param node Node to deallocate.
+ * @return -1 if `node` is NULL. 0 if `node` was successfully destroyed.
+ */
+int node_destroy(node_t node)
+{
+	if (node == NULL) {
+		return -1;
+	}
+
+	free(node);
+
+	return 0;
+}
+
+/*---------------- Queue ---------------- */
 
 struct queue {
-	// think of linked lists
-	void *head;
-	void *tail;
+	node_t front;
+	node_t back;
 	int size;
 };
 
 queue_t queue_create(void)
 {
-	// Allocate memory for queue object
-	queue_t new_q = (queue_t) malloc(sizeof(struct queue));
-	
-	// When allocating to new queue, check if fails
-	if (new_q == NULL) {
-		return NULL;
+	// allocate memory for queue object
+	queue_t queue = (queue_t)malloc(sizeof(struct queue));
+	if (queue == NULL) {
+		return NULL; // memory allocation error
 	}
 
-	// Create queue
-	new_q->head = NULL;
-	new_q->tail = NULL;
-	new_q->size = 0;
-
-	return new_q;
+	// create queue
+	queue->front = queue->back = NULL;
+	queue->size = 0;
+	return queue;
 }
 
 int queue_destroy(queue_t queue)
 {
-	// Return -1 if queue is NULL or queue is not empty
-	/*
-		- queue->head is a way to check if queue is not empty
-		- if head pointer is not NULL, then there should be a item in the queue
-		- hence the queue is not empty
-	*/
-	if (queue == NULL || queue->head != NULL) {
-		return -1;
+	// check if queue is NULL or queue is not empty
+	if (queue == NULL || queue->size != 0) {
+		return -1; // queue must be empty before deallocating
 	}
 
-	// De-allocate memory
 	free(queue);
 
-	/*
-		Another idea:
-		- checking if queue is empty by creating a while loop
-		- inside while loop, set a item to dequeue the queue and free it
-		- outside while loop, free queue
-	*/
-
-	// Successfully destroyed queue
 	return 0;
 }
 
+// remember first item is enqueued at the front and last item is at the back
 int queue_enqueue(queue_t queue, void *data)
 {
-	/* TODO Phase 1 */
-	// For checking memory allocation error using queue and data
 	if (queue == NULL || data == NULL) {
 		return -1;
 	}
 
-	// Allocate memory for new queue item
-	void **new_q = (void**) malloc(sizeof(void*));
-
-	// Set it to the data and next pointer to NULL
-	*new_q = data;
-	// Essentially the next pointer
-	*(new_q + 1) = NULL;
-
-	// If empty, then update new_q
-	if (queue->head == NULL) {
-		queue->head = queue->tail = new_q;
-	} else {
-		// else, add to end of queue
-		// cast void pointer to void** in order to increment the tail pointer by sizeof(void*)
-		// essentially it is the tail pointing to next
-		*((void**) queue->tail + 1) = new_q;
-		queue->tail = new_q;
+	node_t newNode = node_create(data);
+	if (newNode == NULL) {
+		// memory allocation error
+		return -1;
 	}
 
-	// Update queue size
+	// checks if front of queue is empty
+	if (queue->front == NULL) {
+		// empty queue
+		queue->front = queue->back = newNode;
+	} else {
+		// non-empty queue
+		queue->back->next = newNode;
+		// set back of queue to new node
+		queue->back = newNode;
+	}
+
 	queue->size++;
-
-	// De-allocate memeory for new_q
-	// dereference it once to get a pointer to allocated memory block
-	free(*new_q);
-
-	// Successfully enqueued in queue
+	
 	return 0;
 }
 
 int queue_dequeue(queue_t queue, void **data)
 {
-	// For checking memory allocation error using queue and data
-	// Check if queue is also empty
-	if (queue == NULL || data == NULL || queue->head == NULL) {
-		return -1;
+	if (queue == NULL || data == NULL || queue->size == 0) {
+		return -1; // queue must contain node before dequeueing
 	}
+	
+	node_t front = queue->front;
+	
+	// store node data in output, dequeue oldest node in queue
+	*data = front->data;
 
-	// Dequeue oldest item in queue
-	*data = queue->head;
-	
-	// Head pointer points to next item in queue
-	queue->head = *((void**)queue->head);
-	
-	// Checks if queue is empty, helps avoid problems involving memory access
-	// when there are no more items in queue
-	if (queue->head == NULL) {
-		queue->tail = NULL;
-	}
-	
-	// Update queue size
+	// set front of queue to next node
+	queue->front = front->next;
+
+	// delete front node
+	node_destroy(front);
+
 	queue->size--;
 
-	// Successful if data was set with oldest item available
 	return 0;
 }
 
 int queue_delete(queue_t queue, void *data)
 {
-	if (queue == NULL || data == NULL || queue->head == NULL) {
+	if (queue == NULL || data == NULL || queue->size == 0) {
 		return -1;
 	}
 
-	// Find first (oldest) item in queue and delete
-	
+	// for keeping track of nodes
+	node_t cur_node = queue->front;
+	node_t prev_node = NULL;
 
-	// Data not found in queue
+	// find node to delete
+	while (cur_node != NULL || queue->size != 0) {
+		// checks if right node to delete
+		if (cur_node->data == data) {
+			if (prev_node == NULL) {
+				// front node is the one to destroy
+				queue->front = cur_node->next;
+			} else {
+				prev_node->next = cur_node->next;
+			}
+
+			// check if back node can be deleted
+			if (cur_node == queue->back) {
+				queue->back = prev_node;
+			}
+
+			queue_destroy(queue);
+			node_destroy(cur_node);
+
+			queue->size--;
+			return 0;
+		}
+
+		// only executes when this node is empty
+		if (prev_node == NULL) {
+			prev_node = cur_node;
+			cur_node = queue->front->next;
+			continue;
+
+		}
+
+		prev_node = cur_node;
+		cur_node = cur_node->next;
+	}
+
+	// node was not found
 	return -1;
-
 }
 
 int queue_iterate(queue_t queue, queue_func_t func)
 {
-	/* TODO Phase 1 */
+	if (queue == NULL || func == NULL) {
+			return -1;
+	}
+
+	int orig_size = queue->size;
+	int cur_size = 0;
+
+	node_t cur_node = queue->front;
+	node_t prev_node = NULL;
+
+	// iterate through nodes in queue from oldest to newest ones
+	while (cur_node != NULL) {
+		// call the callback function of current node
+		func(queue, cur_node->data);
+		cur_size = queue->size;
+		// check to see if queue size was modified
+		if (orig_size != cur_size) {
+			// uses the previous node to continue where it left off
+			// since the node that was deleted will no longer exist
+			cur_node = prev_node->next;
+			orig_size = cur_size;
+			continue;
+		}
+		prev_node = cur_node;
+		cur_node = cur_node->next;
+	}
+	return 0;
 }
 
 int queue_length(queue_t queue)
@@ -148,4 +230,3 @@ int queue_length(queue_t queue)
 	}
 	return queue->size;
 }
-
