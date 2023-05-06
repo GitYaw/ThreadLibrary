@@ -138,7 +138,7 @@ int queue_dequeue(queue_t queue, void **data)
 	}
 
 	queue->size--;
-
+	
 	return 0;
 }
 
@@ -194,6 +194,10 @@ int queue_iterate(queue_t queue, queue_func_t func)
 
 int queue_length(queue_t queue)
 {
+	if (queue == NULL) {
+		return -1;
+	}
+	
 	return queue->size;
 }
 
