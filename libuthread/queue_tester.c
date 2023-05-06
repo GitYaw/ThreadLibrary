@@ -96,16 +96,44 @@ void test_iterate() {
 	}
 }
 
-	queue_t q = queue_create();
-	int a = 1;
-	int b = 2;
-	int c = 3;
+void test_edge_cases() {
+	fprintf(stderr, "*** TEST EDGE CASES ***\n");
+
+	// queue is null
+	q = NULL;
+	void* data;
+	function_t function;
+	TEST_ASSERT(queue_destroy(q) == -1);
+	TEST_ASSERT(queue_length(q) == -1);
+	TEST_ASSERT(queue_enqueue(q, data) == -1);
+	TEST_ASSERT(queue_dequeue(q, data) == -1);
+	// TEST_ASSERT(queue_delete(q, data) == -1);
+	TEST_ASSERT(queue_iterate(q, function) == -1);
+
+	// data is null
+	q = queue_create();
+	data = NULL;
+	TEST_ASSERT(queue_enqueue(q, data) == -1);
+	TEST_ASSERT(queue_dequeue(q, data) == -1);
+	// TEST_ASSERT(queue_delete(q, data) == -1);
+
+	// function is null
+	function = NULL;
+	TEST_ASSERT(queue_iterate(q, function) == -1);
+
+	// queue is empty
+	TEST_ASSERT(queue_dequeue(q, data) == -1);
+
+	// queue is not empty
+	int a;
 	queue_enqueue(q, &a);
-	queue_enqueue(q, &b);
-	queue_enqueue(q, &c);
+	TEST_ASSERT(queue_destroy(q) == -1);
 
-	queue_iterate(q, print);
+	// data not found
+	int b;
+	// TEST_ASSERT(queue_delete(q, &b) == -1);
 
+	queue_dequeue(q, data);
 	queue_destroy(q);
 }
 
@@ -135,6 +163,8 @@ int main(void)
 	for (int i = 0; i < NUM_TESTS; i++) {
 		runTest(i);
 	}
+
+	test_edge_cases();
 
 	return 0;
 }
