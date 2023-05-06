@@ -176,10 +176,12 @@ int queue_iterate(queue_t queue, queue_func_t func)
 
 	node_t node = queue->front;
 	while (node != NULL) {
+		// queue must be delete resistant, get next node before calling function
+		node_t nextNode = node->next;
 		// call callback function on data item
 		func(queue, node->data);
 		// proceed to next node
-		node = node->next;
+		node = nextNode;
 	}
 	
 	return 0;
