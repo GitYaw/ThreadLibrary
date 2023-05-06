@@ -31,11 +31,11 @@ CC	= gcc
 CFLAGS	:= -Wall -Wextra -Werror
 CFLAGS	+= -pipe
 ## Debug flag
-ifneq ($(D),1)
-CFLAGS	+= -O2
-else
+#ifneq ($(D),1)
+#CFLAGS	+= -O2
+#else
 CFLAGS	+= -g
-endif
+#endif
 ## Include path
 CFLAGS 	+= -I$(UTHREADPATH)
 ## Dependency generation
@@ -69,8 +69,8 @@ $(libuthread): FORCE
 # Cleaning rule
 clean: FORCE
 	@echo "CLEAN	$(CUR_PWD)"
-	$(Q)$(MAKE) V=$(V) D=$(D) -C $(UTHREADPATH) clean
 	$(Q)rm -rf $(objs) $(deps) $(programs)
+#$(Q)$(MAKE) V=$(V) D=$(D) -C $(UTHREADPATH) clean
 
 # Keep object files around
 .PRECIOUS: %.o

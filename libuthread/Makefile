@@ -1,14 +1,13 @@
 # scroll down for actual makefile
 
-queue.out: queue_tester.c queue.o
+c:
+	clear
+	make queue.out
+
+%.out: %_tester.c %.o
 	clear
 	$(CC) $(CFLAGS) -o $@ $^
 	./$@
-
-c:
-	clear
-	make
-
 
 ## MAKEFILE ##
 
@@ -26,12 +25,12 @@ CFLAGS := -Wall
 CFLAGS += -g # Debug flag
 
 # Application objects to compile
-objs := queue.o
+objs := queue.o uthread.o
 
 $(lib): $(objs)
 	ar -rcs $@ $^
 
-queue.o: queue.c queue.h
+%.o: %.c %.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
