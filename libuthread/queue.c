@@ -117,20 +117,25 @@ int queue_enqueue(queue_t queue, void *data)
 	return 0;
 }
 
+// possible issue if back is not set to null if last item dequeued, especially if we enqueue after
 int queue_dequeue(queue_t queue, void **data)
 {
 	if (queue == NULL || data == NULL || queue->size == 0) {
 		return -1; // queue must contain node before dequeueing
 	}
 
-	node_t front = queue->front;
+	// Get front node and store data
+	node_t frontNode = queue->front;
+	*data = frontNode->data;
 
-	// set front of queue to next node
-	queue->front = front->next;
-	// store node data in output
-	*data = front->data;
-	// delete front node
-	node_destroy(front);
+	// Set new front node
+	queue->front = frontNode->next;
+	free(frontNode);
+
+	if (queue->front == NULL) {
+		// empty queue, back just removed
+		queue->back = NULL;
+	}
 
 	queue->size--;
 
