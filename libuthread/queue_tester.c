@@ -5,6 +5,9 @@
 #include <stdbool.h>
 
 #include "queue.h"
+queue_t q;
+
+typedef void (*function_t)(); 
 
 #define TEST_ASSERT(assert)				\
 do {									\
@@ -19,14 +22,13 @@ do {									\
 
 void test_create(void)
 {
-	queue_t q = queue_create();
 	TEST_ASSERT(q != NULL);
-
 	queue_destroy(q);
+	
+	q = queue_create();
 }
 
 void test_enqueue() {
-	queue_t q = queue_create();
 	int a, b;
 
 	queue_enqueue(q, &a);
@@ -38,30 +40,62 @@ void test_enqueue() {
 	TEST_ASSERT(data == &a);
 	queue_dequeue(q, &data);
 	TEST_ASSERT(data == &b);
-
-	queue_destroy(q);
 }
 
 void test_length() {
-	queue_t q = queue_create();
+	int length;
 	int a;
 	for (int i = 0; i < 3; i++) {
 		queue_enqueue(q, &a);
 	}
+
+	length = queue_length(q);
+	TEST_ASSERT(length == 3);
+
 	void* data;
 	queue_dequeue(q, &data);
 
-	int length = queue_length(q);
+ 	length = queue_length(q);
 	TEST_ASSERT(length == 2);
 
-	queue_destroy(q);
+	queue_dequeue(q, &data);
+	queue_dequeue(q, &data);
+
+	length = queue_length(q);
+	TEST_ASSERT(length == 0);
 }
 
-void print(queue_t q, void* d) {
-	printf("%d\n", *(int*)d);
+static void increment(queue_t q, void *data)
+{
+    int* a = (int*) data;
+
+    if (*a == 3) {
+        // queue_delete(q, data);
+	} else {
+        *a += 1;
+	}
+}
+
+void test_delete() {
+	return;
 }
 
 void test_iterate() {
+	int ar[] = {0, 2, 4, 6};
+	for (int i = 0; i < sizeof(ar) / sizeof(int); i++) {
+		queue_enqueue(q, ar + i);
+	}
+
+	queue_iterate(q, increment);
+	TEST_ASSERT(ar[0] == 1);
+	TEST_ASSERT(ar[2] == 5);
+
+	void* data;
+	for (int i = 0; i < sizeof(ar) / sizeof(int); i++) {
+		queue_dequeue(q, &data);
+	}
+}
+
 	queue_t q = queue_create();
 	int a = 1;
 	int b = 2;
@@ -75,10 +109,12 @@ void test_iterate() {
 	queue_destroy(q);
 }
 
-# define NUM_TESTS 4
-typedef void (*function_t)();  
-char* tests[NUM_TESTS] = {"create", "enqueue", "length", "iterate"};
-function_t testFunction[NUM_TESTS] = {&test_create, &test_enqueue, &test_length, &test_iterate};
+# define NUM_TESTS 5
+# define NUM_TRIALS 2 
+char* tests[NUM_TESTS] = {"create", "enqueue", "length", "delete", "iterate"};
+function_t testFunction[NUM_TESTS] = {&test_create, &test_enqueue, &test_length, &test_delete, &test_iterate};
+/// have all test cases run through at least 2 iterations of action/inverse
+/// and have one with all errors/edge cases
 
 void runTest(int i) {
 	if (i < 0 || i >= NUM_TESTS) {
@@ -87,7 +123,11 @@ void runTest(int i) {
 
 	fprintf(stderr, "*** TEST %s ***\n", tests[i]);
 
-	testFunction[i]();
+	for (int j = 0; j < NUM_TRIALS; j++) {
+		q = queue_create();
+		testFunction[i]();
+		queue_destroy(q);
+	}
 }
 
 int main(void)
