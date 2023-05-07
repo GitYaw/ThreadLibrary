@@ -10,23 +10,45 @@
 #include "uthread.h"
 #include "queue.h"
 
+/// <--
+enum State {RUNNING, READY, EXITED};
+typedef enum State state_t;
+
+/*
+ * uthread_tcb - Internal representation of threads called TCB (Thread Control
+ * Block)
+ */
 struct uthread_tcb {
-	/* TODO Phase 2 */
+	state_t state;
+	uthread_ctx_t* context;
+	void* stack;
 };
+typedef struct uthread_tcb uthread_tcb;
+
+queue_t readyQueue;
+uthread_tcb runningThread;
+queue_t exitedQueue;
 
 struct uthread_tcb *uthread_current(void)
 {
 	/* TODO Phase 2/3 */
+	// return running thread?
 }
 
 void uthread_yield(void)
 {
 	/* TODO Phase 2 */
+	// add running thread back into ready queue
+	// move next ready thread to running thread 
+	// context switch to start running
 }
 
 void uthread_exit(void)
 {
 	/* TODO Phase 2 */
+	// add running thread to exited queue
+	// move next ready thread to running thread 
+	// context switch to start running
 }
 
 int uthread_create(uthread_func_t func, void *arg)
@@ -37,7 +59,47 @@ int uthread_create(uthread_func_t func, void *arg)
 
 int uthread_run(bool preempt, uthread_func_t func, void *arg)
 {
-	/* TODO Phase 2 */
+	// Allocate space for thread control block
+	uthread_tcb* initialThread = (uthread_tcb*) malloc(sizeof(uthread_tcb));
+	if (initialThread == NULL) {
+		// memory allocation error
+		return -1;
+	}
+
+	// Allocate memory segment for stack
+	void* stack = uthread_ctx_alloc_stack();
+	if (stack == NULL) {
+		// memory allocation error
+		free(initialThread);
+		return -1;
+	} else {
+		initialThread->stack = stack;
+	}
+
+	// Initialize thread execution context
+	if (uthread_ctx_init(initialThread->context, initialThread->stack, func, arg) == -1) {
+		// context creation error
+		uthread_ctx_destroy_stack(initialThread->stack);
+		free(initialThread);
+		return -1;
+	} else {
+		initialThread->state = READY;
+	}
+
+	/// enable preemptive scheduling if true
+
+	readyQueue = queue_create();
+	queue_enqueue(readyQueue, initialThread);
+
+	// do {
+	// 	// yield to next thread
+
+	// 	/// if I understand this right, will continue here once it becomes active again
+	// 	// deallocate stacks and threads for each thread in exited queue
+	// 		/// use iterate & delete?
+
+	// } while (/* size of ready queue > */ 0);
+
 	return 0;
 }
 
