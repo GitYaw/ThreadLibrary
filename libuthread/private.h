@@ -1,7 +1,7 @@
 #ifndef _UTHREAD_PRIVATE_H
 #define _UTHREAD_PRIVATE_H
 
-/*
+/**
  * This header is only meant to be included by files from the libuthread, as it
  * defines some private APIs usable internally. This header is not to be
  * included by user programs directly.
@@ -14,8 +14,8 @@
 
 #include "uthread.h"
 
-/*
- * uthread_ctx_t - User-level thread context
+/**
+ * uthread_ctx_t - User-level thread context.
  *
  * This type is an opaque data structure type that contains a thread's execution
  * context.
@@ -26,37 +26,39 @@
  */
 typedef ucontext_t uthread_ctx_t;
 
-/*
- * uthread_ctx_switch - Switch between two execution contexts
- * @prev: Pointer to the execution context structure in which to save the
+/**
+ * uthread_ctx_switch - Switch between two execution contexts.
+ * 
+ * @param prev: Pointer to the execution context structure in which to save the
  *	currently running thread
- * @next: Pointer to the execution context structure to resume
+ * @param next: Pointer to the execution context structure to resume
  */
 void uthread_ctx_switch(uthread_ctx_t *prev, uthread_ctx_t *next);
 
-/*
- * uthread_ctx_alloc_stack - Allocate stack segment
+/**
+ * uthread_ctx_alloc_stack - Allocate stack segment.
  *
- * Return: Pointer to the top of a valid stack segment, or NULL in case of
+ * @return Pointer to the top of a valid stack segment, or NULL in case of
  * failure
  */
 void *uthread_ctx_alloc_stack(void);
 
-/*
- * uthread_ctx_destroy_stack - Deallocate stack segment
- * @top_of_stack: Address of stack to deallocate
+/**
+ * uthread_ctx_destroy_stack - Deallocate stack segment.
+ * 
+ * @param top_of_stack: Address of stack to deallocate
  */
 void uthread_ctx_destroy_stack(void *top_of_stack);
 
-/*
- * uthread_ctx_init - Initialize a thread's execution context
- * @uctx: Pointer to thread context to initialize
- * @top_of_stack: Pointer to the top of a valid stack segment, as allocated by
- *	uthread_ctx_alloc_stack()
- * @func: Function to be executed by the thread
- * @arg: Argument to pass to the thread
+/**
+ * uthread_ctx_init - Initialize a thread's execution context.
  *
- * Return: 0 if @uctx was properly initialized, or -1 in case of failure
+ * @param uctx: Pointer to thread context to initialize
+ * @param top_of_stack: Pointer to the top of a valid stack segment, as allocated by
+ *	uthread_ctx_alloc_stack()
+ * @param func: Function to be executed by the thread
+ * @param arg: Argument to pass to the thread
+ * @return 0 if `uctx` was properly initialized, or -1 in case of failure
  */
 int uthread_ctx_init(uthread_ctx_t *uctx, void *top_of_stack,
 					 uthread_func_t func, void *arg);
@@ -66,33 +68,34 @@ int uthread_ctx_init(uthread_ctx_t *uctx, void *top_of_stack,
  * Private preemption API
  */
 
-/*
- * preempt_start - Start thread preemption
- * @preempt: Enable preemption if true
+/**
+ * preempt_start - Start thread preemption.
  *
  * Configure a timer that must fire a virtual alarm at a frequency of 100 Hz and
  * setup a timer handler that forcefully yields the currently running thread.
  *
- * If @preempt is false, don't start preemption; all the other functions from
+ * If `preempt` is false, don't start preemption; all the other functions from
  * the preemption API should then be ineffective.
+ * 
+ * @param preempt: Enable preemption if true
  */
 void preempt_start(bool preempt);
 
-/*
- * preempt_stop - Stop thread preemption
+/**
+ * preempt_stop - Stop thread preemption.
  *
  * Restore previous timer configuration, and previous action associated to
  * virtual alarm signals.
  */
 void preempt_stop(void);
 
-/*
- * preempt_enable - Enable preemption
+/**
+ * preempt_enable - Enable preemption.
  */
 void preempt_enable(void);
 
-/*
- * preempt_disable - Disable preemption
+/**
+ * preempt_disable - Disable preemption.
  */
 void preempt_disable(void);
 
@@ -101,27 +104,28 @@ void preempt_disable(void);
  * Private uthread API
  */
 
-/*
+/**
  * uthread_tcb - Internal representation of threads called TCB (Thread Control
- * Block)
+ * Block).
  */
 struct uthread_tcb;
 
-/*
- * uthread_current - Get currently running thread
+/**
+ * uthread_current - Get currently running thread.
  *
- * Return: Pointer to current thread's TCB
+ * @return Pointer to current thread's TCB
  */
 struct uthread_tcb *uthread_current(void);
 
-/*
- * uthread_block - Block currently running thread
+/**
+ * uthread_block - Block currently running thread.
  */
 void uthread_block(void);
 
-/*
- * uthread_unblock - Unblock thread
- * @uthread: TCB of thread to unblock
+/**
+ * uthread_unblock - Unblock thread.
+ * 
+ * @param uthread: TCB of thread to unblock
  */
 void uthread_unblock(struct uthread_tcb *uthread);
 

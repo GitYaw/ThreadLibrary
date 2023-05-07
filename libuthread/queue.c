@@ -159,20 +159,6 @@ int queue_delete(queue_t queue, void *data)
 	return 0;
 }
 
-/*
- * queue_iterate - Iterate through a queue
- * @queue: Queue to iterate through
- * @func: Function to call on each queue item
- *
- * This function iterates through the items in the queue @queue, from the oldest
- * item to the newest item, and calls the given callback function @func on each
- * item. The callback function receives the current data item as parameter.
- *
- * Note that this function should be resistant to data items being deleted
- * as part of the iteration (ie in @func).
- *
- * Return: -1 if @queue or @func are NULL, 0 otherwise.
- */
 int queue_iterate(queue_t queue, queue_func_t func)
 {	 
 	if (queue == NULL || func == NULL) {
