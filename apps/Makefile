@@ -54,10 +54,11 @@ deps := $(patsubst %.o,%.d,$(objs))
 # Rule for libuthread.a
 $(libuthread): FORCE
 	@echo "MAKE	$@"
-	$(Q)$(MAKE) V=$(V) D=$(D) -C $(UTHREADPATH)
+	$(Q)$(MAKE) all -C $(UTHREADPATH)
 
 # Generic rule for linking final applications
 %.x: %.o $(libuthread)
+	clear
 	@echo "LD	$@"
 	$(Q)$(CC) -o $@ $< $(LDFLAGS)
 
