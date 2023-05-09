@@ -65,33 +65,54 @@ void test_length() {
 	TEST_ASSERT(length == 0);
 }
 
-static void increment(queue_t q, void *data)
-{
-    int* a = (int*) data;
+void test_delete() {
+	int a, b;
+	queue_enqueue(q, &b);
+	queue_enqueue(q, &a);
+	queue_enqueue(q, &b); // q = &b, &a, &b
 
-    if (*a == 3) {
-        // queue_delete(q, data);
+	queue_delete(q, &b); // q = &a, &b
+	TEST_ASSERT(queue_length(q) == 2);
+	void* data;
+	queue_dequeue(q, &data);
+	TEST_ASSERT(data == &a);
+	queue_dequeue(q, &data);
+	TEST_ASSERT(data == &b);
+
+	int c;
+	queue_enqueue(q, &a);
+	queue_enqueue(q, &b);
+	queue_enqueue(q, &c);  // q = &a, &b, &c
+
+	queue_delete(q, &b); // q = &a, &c
+	queue_delete(q, &c); // q = &a
+	queue_delete(q, &a);
+	TEST_ASSERT(queue_length(q) == 0);
+}
+
+static void increment(queue_t q, void *data) {
+    int* i = (int*) data;
+	if (*i >= 0) {
+		(*i)++;
 	} else {
-        *a += 1;
+		queue_delete(q, i);
 	}
 }
 
-void test_delete() {
-	return;
-}
-
 void test_iterate() {
-	int ar[] = {0, 2, 4, 6};
+	int ar[] = {0, 1, -2, -3};
 	for (int i = 0; i < sizeof(ar) / sizeof(int); i++) {
 		queue_enqueue(q, ar + i);
 	}
 
 	queue_iterate(q, increment);
 	TEST_ASSERT(ar[0] == 1);
-	TEST_ASSERT(ar[2] == 5);
+	TEST_ASSERT(ar[1] == 2);
+	int length = queue_length(q);
+	TEST_ASSERT(length == 2);
 
 	void* data;
-	for (int i = 0; i < sizeof(ar) / sizeof(int); i++) {
+	for (int i = 0; i < length; i++) {
 		queue_dequeue(q, &data);
 	}
 }
@@ -107,7 +128,7 @@ void test_edge_cases() {
 	TEST_ASSERT(queue_length(q) == -1);
 	TEST_ASSERT(queue_enqueue(q, data) == -1);
 	TEST_ASSERT(queue_dequeue(q, data) == -1);
-	// TEST_ASSERT(queue_delete(q, data) == -1);
+	TEST_ASSERT(queue_delete(q, data) == -1);
 	TEST_ASSERT(queue_iterate(q, function) == -1);
 
 	// data is null
@@ -115,7 +136,7 @@ void test_edge_cases() {
 	data = NULL;
 	TEST_ASSERT(queue_enqueue(q, data) == -1);
 	TEST_ASSERT(queue_dequeue(q, data) == -1);
-	// TEST_ASSERT(queue_delete(q, data) == -1);
+	TEST_ASSERT(queue_delete(q, data) == -1);
 
 	// function is null
 	function = NULL;
@@ -131,7 +152,7 @@ void test_edge_cases() {
 
 	// data not found
 	int b;
-	// TEST_ASSERT(queue_delete(q, &b) == -1);
+	TEST_ASSERT(queue_delete(q, &b) == -1);
 
 	queue_dequeue(q, data);
 	queue_destroy(q);

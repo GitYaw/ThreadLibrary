@@ -54,6 +54,8 @@ void test_iterator(void)
     int data[] = {1, 2, 3, 4, 5, 42, 6, 7, 8, 9};
     size_t i;
 
+	fprintf(stderr, "*** TEST iterator ***\n");
+
     /* Initialize the queue and enqueue items */
     q = queue_create();
     for (i = 0; i < sizeof(data) / sizeof(data[0]); i++)

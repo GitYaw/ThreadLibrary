@@ -142,32 +142,52 @@ int queue_dequeue(queue_t queue, void **data)
 	return 0;
 }
 
-/*
- * queue_delete - Delete data item
- * @queue: Queue in which to delete item
- * @data: Data to delete
- *
- * Find in queue @queue, the first (ie oldest) item equal to @data and delete
- * this item.
- *
- * Return: -1 if @queue or @data are NULL, of if @data was not found in the
- * queue. 0 if @data was found and deleted from @queue.
- */
 int queue_delete(queue_t queue, void *data)
 {
-	/* TODO Phase 1 */
-	return 0;
+	if (queue == NULL || data == NULL) {
+		return -1;
+	}
+	
+	// special case if first node (no previous node)
+	if (queue->front->data == data) {
+		queue_dequeue(queue, &data); // deleting first node is equivalent of dequeuing (data not used)
+		return 0;
+	}
+
+	node_t node = queue->front;
+	node_t back = queue->back;
+
+	// in linked list, node must be deleted using the preceding node
+
+	while (node != back) {
+		// get next node in queue
+		node_t nextNode = node->next;
+
+		if (nextNode->data == data) {
+			// node to delete, set node before to skip and point to node after
+			node->next = nextNode->next;
+			// deallocate node
+			node_destroy(nextNode);
+
+			queue->size--;
+			return 0;
+		}
+
+		node = nextNode;
+	}
+
+	return -1; // data not found
 }
 
 int queue_iterate(queue_t queue, queue_func_t func)
 {	 
 	if (queue == NULL || func == NULL) {
-		return -1; // queue must contain node before dequeueing
+		return -1;
 	}
 
 	node_t node = queue->front;
 	while (node != NULL) {
-		// queue must be delete resistant, get next node before calling function
+		// queue must be delete-resistant, get next node before calling function
 		node_t nextNode = node->next;
 		// call callback function on data item
 		func(queue, node->data);
