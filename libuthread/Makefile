@@ -21,17 +21,23 @@ CC	= gcc
 
 # General gcc options
 CFLAGS := -Wall
-#CFLAGS += -Wextra -Werror
+CFLAGS += -Wextra # -Werror
 CFLAGS += -g # Debug flag
 
 # Application objects to compile
-objs := queue.o uthread.o
+objs := queue.o uthread.o preempt.o context.o
 
 $(lib): $(objs)
 	ar -rcs $@ $^
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c -o $@ $<
+
+uthread.o: queue.h private.h
+
+preempt.o: uthread.h private.h
+
+context.o: uthread.h private.h
 
 clean:
 	rm -f *.o *.a *.out 

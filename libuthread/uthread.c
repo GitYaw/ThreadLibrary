@@ -77,7 +77,7 @@ int uthread_create(uthread_func_t func, void *arg)
 	if (newThread == NULL) {
 		// memory allocation error
 		return -1;
-}
+	}
 
 	// allocate space for thread context
 	uthread_ctx_t* context = (uthread_ctx_t*) malloc(sizeof(uthread_ctx_t));
@@ -123,21 +123,53 @@ void uthread_destroy(uthread_tcb* thread) {
 	free(thread);
 }
 
+static void uthread_remove(queue_t q, void *data) {
+    uthread_tcb* thread = (uthread_tcb*) data;
+
+	// clear thread
+	uthread_destroy(thread);
+
+	// remove from queue
+	queue_delete(q, data);
+}
+
+int uthread_run(bool preempt, uthread_func_t func, void *arg)
+{
+	readyQueue = queue_create(); // queue for ready threads
+	int success;
+
+	success = uthread_create(NULL, NULL); // add TCB for idle thread to queue (context overwritten on switch)
+	if (success == -1) {
+		// thread create error
+		queue_destroy(readyQueue);
+		return -1;
 	}
+	queue_dequeue(readyQueue, (void**) &runningThread); // set to running thread to facilitate context switch
 
-	/// enable preemptive scheduling if true
+	success = uthread_create(func, arg); // add initial thread to queue
+	if (success == -1) {
+		// thread create error
+		uthread_destroy(runningThread);
+		queue_destroy(readyQueue);
+		return -1;
+	}
+	exitedQueue = queue_create(); // queue for exited threads
 
-	readyQueue = queue_create();
-	queue_enqueue(readyQueue, initialThread);
+	// begin thread execution
+	do  {
+		
+		// yield to next thread
+		uthread_yield();
 
-	// do {
-	// 	// yield to next thread
+		/// if I understand this right, will continue here once it becomes active again
+		
+		// clear threads in exited queue
+		queue_iterate(exitedQueue, uthread_remove);
 
-	// 	/// if I understand this right, will continue here once it becomes active again
-	// 	// deallocate stacks and threads for each thread in exited queue
-	// 		/// use iterate & delete?
+	} while (queue_length(readyQueue) > 0);
 
-	// } while (/* size of ready queue > */ 0);
+	queue_destroy(readyQueue);
+	queue_destroy(exitedQueue);
 
 	return 0;
 }
