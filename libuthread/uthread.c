@@ -26,13 +26,22 @@ struct uthread_tcb {
 typedef struct uthread_tcb uthread_tcb;
 
 queue_t readyQueue;
-uthread_tcb runningThread;
+uthread_tcb* runningThread;
+uthread_tcb* previousThread;
 queue_t exitedQueue;
 
 struct uthread_tcb *uthread_current(void)
 {
-	/* TODO Phase 2/3 */
-	// return running thread?
+	return runningThread;
+}
+
+void uthread_switch(void) {
+	// set running thread to next ready thread
+	queue_dequeue(readyQueue, (void**) &runningThread);
+	runningThread->state = RUNNING;
+
+	// resume execution from context of running thread
+	uthread_ctx_switch(previousThread->context, runningThread->context);
 }
 
 void uthread_yield(void)
