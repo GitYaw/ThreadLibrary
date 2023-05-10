@@ -69,36 +69,60 @@ void uthread_exit(void)
 int uthread_create(uthread_func_t func, void *arg)
 {
 	/* TODO Phase 2 */
-	return 0;
-}
+	// create new thread control block
+	// add new thread to ready queue
 
-int uthread_run(bool preempt, uthread_func_t func, void *arg)
-{
-	// Allocate space for thread control block
-	uthread_tcb* initialThread = (uthread_tcb*) malloc(sizeof(uthread_tcb));
-	if (initialThread == NULL) {
+	// allocate space for thread control block
+	uthread_tcb* newThread = (uthread_tcb*) malloc(sizeof(uthread_tcb));
+	if (newThread == NULL) {
 		// memory allocation error
 		return -1;
+}
+
+	// allocate space for thread context
+	uthread_ctx_t* context = (uthread_ctx_t*) malloc(sizeof(uthread_ctx_t));
+	if (context == NULL) {
+		// memory allocation error
+		free(newThread);
+		return -1;
+	} else {
+		newThread->context = context;
 	}
 
-	// Allocate memory segment for stack
+	// allocate memory segment for stack
 	void* stack = uthread_ctx_alloc_stack();
 	if (stack == NULL) {
 		// memory allocation error
-		free(initialThread);
+		free(newThread);
 		return -1;
 	} else {
-		initialThread->stack = stack;
+		newThread->stack = stack;
 	}
 
-	// Initialize thread execution context
-	if (uthread_ctx_init(initialThread->context, initialThread->stack, func, arg) == -1) {
+	// initialize thread execution context
+	if (uthread_ctx_init(newThread->context, newThread->stack, func, arg) == -1) {
 		// context creation error
-		uthread_ctx_destroy_stack(initialThread->stack);
-		free(initialThread);
+		uthread_ctx_destroy_stack(newThread->stack);
+		free(newThread);
 		return -1;
-	} else {
-		initialThread->state = READY;
+	}
+
+	// add new thread to ready queue
+	queue_enqueue(readyQueue, newThread);
+	newThread->state = READY;
+	
+	return 0;
+}
+
+void uthread_destroy(uthread_tcb* thread) {
+	// deallocate stack
+	uthread_ctx_destroy_stack(thread->stack);
+	// deallocate context
+	free(thread->context);
+	// deallocate thread
+	free(thread);
+}
+
 	}
 
 	/// enable preemptive scheduling if true
