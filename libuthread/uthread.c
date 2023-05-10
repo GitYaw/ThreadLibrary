@@ -46,18 +46,24 @@ void uthread_switch(void) {
 
 void uthread_yield(void)
 {
-	/* TODO Phase 2 */
-	// add running thread back into ready queue
-	// move next ready thread to running thread 
-	// context switch to start running
+	previousThread = runningThread;
+
+	// move running thread back into ready queue
+	queue_enqueue(readyQueue, previousThread);
+	previousThread->state = READY;
+
+	uthread_switch();
 }
 
 void uthread_exit(void)
 {
-	/* TODO Phase 2 */
-	// add running thread to exited queue
-	// move next ready thread to running thread 
-	// context switch to start running
+	previousThread = runningThread;
+
+	// move running thread into exited queue (to be collected by idle thread)
+	queue_enqueue(exitedQueue, previousThread);
+	previousThread->state = EXITED;
+
+	uthread_switch();
 }
 
 int uthread_create(uthread_func_t func, void *arg)
