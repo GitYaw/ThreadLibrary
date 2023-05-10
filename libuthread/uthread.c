@@ -133,6 +133,23 @@ static void uthread_remove(queue_t q, void *data) {
 	queue_delete(q, data);
 }
 
+void uthread_idle(void) {
+	do  {
+		// disable preemption?
+
+		// yield to next thread
+		uthread_yield();
+
+		// enable preemption?
+
+		/// if I understand this right, will continue here once it becomes active again
+		
+		// clear threads in exited queue
+		queue_iterate(exitedQueue, uthread_remove);
+
+	} while (queue_length(readyQueue) > 0);
+}
+
 int uthread_run(bool preempt, uthread_func_t func, void *arg)
 {
 	readyQueue = queue_create(); // queue for ready threads
@@ -156,17 +173,7 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg)
 	exitedQueue = queue_create(); // queue for exited threads
 
 	// begin thread execution
-	do  {
-		
-		// yield to next thread
-		uthread_yield();
-
-		/// if I understand this right, will continue here once it becomes active again
-		
-		// clear threads in exited queue
-		queue_iterate(exitedQueue, uthread_remove);
-
-	} while (queue_length(readyQueue) > 0);
+	uthread_idle();
 
 	queue_destroy(readyQueue);
 	queue_destroy(exitedQueue);
