@@ -1,8 +1,12 @@
 # Target programs
 programs := \
-	queue_tester_example.x \
+	queue_tester.x \
 	uthread_hello.x \
 	uthread_yield.x \
+	sem_simple.x \
+	sem_count.x \
+	sem_buffer.x \
+	sem_prime.x \
 	test_preempt.x
 
 # User-level thread library
@@ -29,8 +33,7 @@ CUR_PWD := $(shell pwd)
 CC	= gcc
 
 # General gcc options
-CFLAGS	:= -Wall 
-CFLAGS  += -Wextra -Werror
+CFLAGS	:= -Wall -Wextra 
 CFLAGS	+= -pipe
 ## Debug flag
 ifneq ($(D),1)
