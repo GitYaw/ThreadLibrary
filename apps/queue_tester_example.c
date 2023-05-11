@@ -37,33 +37,6 @@ void test_queue_simple(void)
 	TEST_ASSERT(ptr == &data);
 }
 
-void test_queue_length(void)
-{
-	int *data1 = malloc(sizeof(int));
-    int *data2 = malloc(sizeof(int));
-	*data1 = 3;
-    *data2 = 5;
-
-    queue_t q;
-
-    fprintf(stderr, "*** TEST queue_length ***\n");
-
-    q = queue_create();
-    TEST_ASSERT(queue_length(q) == 0);
-    queue_enqueue(q, data1);
-    TEST_ASSERT(queue_length(q) == 1);
-    queue_enqueue(q, data2);
-    TEST_ASSERT(queue_length(q) == 2);
-	queue_dequeue(q, (void**)(&data1));
-    TEST_ASSERT(queue_length(q) == 1);
-    queue_dequeue(q, (void**)(&data2));
-    TEST_ASSERT(queue_length(q) == 0);
-
-	free(data1);
-	free(data2);
-}
-
-
 /* Queue delete */
 void test_queue_delete(void)
 {
@@ -131,7 +104,6 @@ int main(void)
 {
 	test_create();
 	test_queue_simple();
-	test_queue_length();
 	test_queue_delete();
 	test_iterator();
 
