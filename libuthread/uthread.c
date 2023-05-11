@@ -36,21 +36,40 @@ struct uthread_tcb *uthread_current(void)
 }
 
 void uthread_switch(void) {
-	// set running thread to next ready thread
+	// Disable preempt because going to modify queue
+	preempt_disable();
+
+	// Set running thread to next ready thread
 	queue_dequeue(readyQueue, (void**) &runningThread);
 	runningThread->state = RUNNING;
 
-	// resume execution from context of running thread
+	// Resume execution from context of running thread
 	uthread_ctx_switch(previousThread->context, runningThread->context);
+
+	// Enable preempt 
+	preempt_enable();
 }
 
 void uthread_yield(void)
 {
+	// Store current thread into previousThread to remember it
 	previousThread = runningThread;
 
-	// move running thread back into ready queue
-	queue_enqueue(readyQueue, previousThread);
-	previousThread->state = READY;
+	// Check if previous thread is running
+	if (previousThread->state == RUNNING) {
+		
+		// Need to disable it because next step requires accessing global queue
+		preempt_disable();
+
+		// Move running thread back into ready queue
+		queue_enqueue(readyQueue, previousThread);
+
+		// Change it back to ready
+		previousThread->state = READY;
+
+		// Done with modifying global data structure
+		preempt_enable();
+	}
 
 	uthread_switch();
 }
@@ -68,34 +87,36 @@ void uthread_exit(void)
 
 int uthread_create(uthread_func_t func, void *arg)
 {
-	// allocate space for thread control block
+	// Allocate space for thread control block
 	uthread_tcb* newThread = (uthread_tcb*) malloc(sizeof(uthread_tcb));
 	if (newThread == NULL) {
-		// memory allocation error
+		// Memory allocation error
 		return -1;
 	}
 
-	// allocate space for thread context
+	/* Create thread */
+
+	// Allocate space for thread context
 	uthread_ctx_t* context = (uthread_ctx_t*) malloc(sizeof(uthread_ctx_t));
 	if (context == NULL) {
-		// memory allocation error
+		// Memory allocation error
 		free(newThread);
 		return -1;
 	} else {
 		newThread->context = context;
 	}
 
-	// allocate memory segment for stack
+	// Allocate memory segment for stack
 	void* stack = uthread_ctx_alloc_stack();
 	if (stack == NULL) {
-		// memory allocation error
+		// Memory allocation error
 		free(newThread);
 		return -1;
 	} else {
 		newThread->stack = stack;
 	}
 
-	// initialize thread execution context
+	// Initialize thread execution context
 	int success = uthread_ctx_init(newThread->context, newThread->stack, func, arg);
 	if (success == -1) {
 		// context creation error
@@ -104,102 +125,138 @@ int uthread_create(uthread_func_t func, void *arg)
 		return -1;
 	}
 
-	// add new thread to ready queue
-	queue_enqueue(readyQueue, newThread);
 	newThread->state = READY;
+
+	// Disable preempt before manipulating data structure queue
+	preempt_disable();
+
+	// Add new thread to ready queue
+	queue_enqueue(readyQueue, newThread);
+
+	// Done with modifying queue
+	preempt_enable();
 	
 	return 0;
 }
 
 void uthread_destroy(uthread_tcb* thread) {
-	// deallocate stack
+	// Deallocate stack
 	uthread_ctx_destroy_stack(thread->stack);
-	// deallocate context
+	
+	// Deallocate context
 	free(thread->context);
-	// deallocate thread
+	
+	// Deallocate thread
 	free(thread);
 }
 
 static void uthread_remove(queue_t q, void *data) {
     uthread_tcb* thread = (uthread_tcb*) data;
 
-	// clear thread
+	// Clear thread
 	uthread_destroy(thread);
 
-	// remove from queue
+	// Remove from queue
 	queue_delete(q, data);
 }
 
 void uthread_idle(void) {
 	do  {
-		// disable preemption?
-
-		// yield to next thread
+		// Yield to next thread
 		uthread_yield();
-
-		// enable preemption?
-		
-		// clear threads in exited queue
+	
+		// Clear threads in exited queue
 		queue_iterate(exitedQueue, uthread_remove);
 
-	} while (queue_length(readyQueue) > 0); // while there are still ready threads in queue
+	} while (queue_length(readyQueue) > 0); // While there are still ready threads in queue
 }
 
 int uthread_run(bool preempt, uthread_func_t func, void *arg)
 {
-	int success;
-	readyQueue = queue_create(); // queue for ready threads
+	// Should be called when uthread library is setting up preemption
+	preempt_start(preempt);
 
-	success = uthread_create(NULL, NULL); // add TCB for idle thread to queue (context overwritten on switch)
+	int success;
+
+	// Accessing global queue, so remember to disable preempt
+	preempt_disable();
+
+	// Queue for ready threads
+	readyQueue = queue_create(); 
+
+	// Enable preempt after done with queue
+	preempt_enable();
+
+	// Failure to initalize the queue
+	if (readyQueue == NULL) {
+		return -1;
+	}
+
+ 	// Add TCB for idle thread to queue (context overwritten on switch)
+	success = uthread_create(NULL, NULL);
+	
 	if (success == -1) {
-		// thread create error
+		// Thread create error
 		queue_destroy(readyQueue);
 		return -1;
 	}
-	queue_dequeue(readyQueue, (void**) &runningThread); // set to running thread to facilitate context switch
+	// Set to running thread to facilitate context switch
+	queue_dequeue(readyQueue, (void**) &runningThread); 
 	runningThread->state = RUNNING;
 	
-	success = uthread_create(func, arg); // add initial thread to queue
+	success = uthread_create(func, arg); // Add initial thread to queue
 	if (success == -1) {
-		// thread create error
+		// Thread create error
 		uthread_destroy(runningThread);
 		queue_destroy(readyQueue);
 		return -1;
 	}
-	exitedQueue = queue_create(); // queue for exited threads
 
-	if (preempt) {
+	// Queue for exited threads
+	exitedQueue = queue_create(); 
 
-	}
-	
-	// begin thread execution
+	// Begin thread execution
 	uthread_idle();
 
+	// Destroying queue 
 	queue_destroy(readyQueue);
 	queue_destroy(exitedQueue);
+
+	// Call this function before uthread_run() returns
+	// to get old signal alarm and timer 
+	preempt_stop();
 
 	return 0;
 }
 
 void uthread_block(void)
 {
-	/* TODO Phase 3 */
 	// set previous to thread (but don't put in any queue)
 	// set status of active thread to blocked -- right order from previous line?
 	// call context switch
 
 	previousThread = runningThread;
-
 	previousThread->state = BLOCKED;
 	// in semaphore blocked queue, don't add to ready queue
 
-	uthread_switch();
+	// Part of yielding process
+	uthread_switch(); 
 }
 
 void uthread_unblock(struct uthread_tcb *uthread)
 {
-	// move unblocked thread back into ready queue
-	queue_enqueue(readyQueue, uthread);
-	uthread->state = READY;
-}
+	// Check if thread is still blocked
+	if (uthread->state == BLOCKED) {
+		// Change state of thread to ready
+		uthread->state = READY;
+	}
 
+	// Accessing global queue, so disable
+	preempt_disable();
+
+	// Move unblocked thread back into ready queue
+	queue_enqueue(readyQueue, uthread);
+
+	// Enable preempt after modifying queue
+	preempt_enable();
+}
