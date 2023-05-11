@@ -168,6 +168,10 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg)
 	}
 	exitedQueue = queue_create(); // queue for exited threads
 
+	if (preempt) {
+
+	}
+	
 	// begin thread execution
 	uthread_idle();
 

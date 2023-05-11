@@ -28,6 +28,9 @@ void preempt_enable(void)
 void preempt_start(bool preempt)
 {
 	/* TODO Phase 4 */
+	if (preempt) {
+		
+	}
 }
 
 void preempt_stop(void)
