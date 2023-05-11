@@ -141,8 +141,6 @@ void uthread_idle(void) {
 		uthread_yield();
 
 		// enable preemption?
-
-		/// if I understand this right, will continue here once it becomes active again
 		
 		// clear threads in exited queue
 		queue_iterate(exitedQueue, uthread_remove);

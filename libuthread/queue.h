@@ -13,7 +13,7 @@
 typedef struct queue* queue_t;
 
 /**
- * queue_create - Allocate an empty queue
+ * queue_create - Allocate an empty queue.
  *
  * Create a new object of type 'struct queue' and return its address.
  *

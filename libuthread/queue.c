@@ -117,7 +117,6 @@ int queue_enqueue(queue_t queue, void *data)
 	return 0;
 }
 
-// possible issue if back is not set to null if last item dequeued, especially if we enqueue after
 int queue_dequeue(queue_t queue, void **data)
 {
 	if (queue == NULL || data == NULL || queue->size == 0) {
