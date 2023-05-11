@@ -196,6 +196,8 @@ void uthread_block(void)
 
 void uthread_unblock(struct uthread_tcb *uthread)
 {
-	/* TODO Phase 3 */
+	// move unblocked thread back into ready queue
+	queue_enqueue(readyQueue, uthread);
+	uthread->state = READY;
 }
 

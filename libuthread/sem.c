@@ -64,5 +64,21 @@ int sem_down(sem_t sem)
 int sem_up(sem_t sem)
 {
 	/* TODO Phase 3 */
+
+	sem->count++;
+
+	// check if threads are waiting for resource
+	if (queue_length(sem->blockedQueue) > 0) {
+
+		// acquire resource for next waiting thread
+		sem_down(sem);
+
+		// unblock thread and remove from waiting queue
+		struct uthread_tcb* thread;
+		queue_dequeue(sem->blockedQueue, (void**) &thread);
+		uthread_unblock(thread);
+	}
+
+	return 0;
 }
 
