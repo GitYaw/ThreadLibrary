@@ -10,8 +10,8 @@
 #include "uthread.h"
 #include "queue.h"
 
-/// <--
-enum State {RUNNING, READY, EXITED};
+/// <-- remove triple-slash comments
+enum State {RUNNING, READY, BLOCKED, EXITED};
 typedef enum State state_t;
 
 /*
@@ -68,10 +68,6 @@ void uthread_exit(void)
 
 int uthread_create(uthread_func_t func, void *arg)
 {
-	/* TODO Phase 2 */
-	// create new thread control block
-	// add new thread to ready queue
-
 	// allocate space for thread control block
 	uthread_tcb* newThread = (uthread_tcb*) malloc(sizeof(uthread_tcb));
 	if (newThread == NULL) {
@@ -100,7 +96,8 @@ int uthread_create(uthread_func_t func, void *arg)
 	}
 
 	// initialize thread execution context
-	if (uthread_ctx_init(newThread->context, newThread->stack, func, arg) == -1) {
+	int success = uthread_ctx_init(newThread->context, newThread->stack, func, arg);
+	if (success == -1) {
 		// context creation error
 		uthread_ctx_destroy_stack(newThread->stack);
 		free(newThread);
@@ -145,13 +142,13 @@ void uthread_idle(void) {
 		// clear threads in exited queue
 		queue_iterate(exitedQueue, uthread_remove);
 
-	} while (queue_length(readyQueue) > 0);
+	} while (queue_length(readyQueue) > 0); // while there are still ready threads in queue
 }
 
 int uthread_run(bool preempt, uthread_func_t func, void *arg)
 {
-	readyQueue = queue_create(); // queue for ready threads
 	int success;
+	readyQueue = queue_create(); // queue for ready threads
 
 	success = uthread_create(NULL, NULL); // add TCB for idle thread to queue (context overwritten on switch)
 	if (success == -1) {
@@ -160,7 +157,8 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg)
 		return -1;
 	}
 	queue_dequeue(readyQueue, (void**) &runningThread); // set to running thread to facilitate context switch
-
+	runningThread->state = RUNNING;
+	
 	success = uthread_create(func, arg); // add initial thread to queue
 	if (success == -1) {
 		// thread create error
