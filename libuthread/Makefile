@@ -1,14 +1,3 @@
-# scroll down for actual makefile
-
-c:
-	clear
-	make queue.out
-
-%.out: %_tester.c %.o
-	clear
-	$(CC) $(CFLAGS) -o $@ $^
-	./$@
-
 ## MAKEFILE ##
 
 # Target library
@@ -30,12 +19,12 @@ objs := queue.o uthread.o sem.o preempt.o context.o
 $(lib): $(objs)
 	ar -rcs $@ $^
 
-%.o: %.c %.h
+%.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-sem.o: queue.h private.h
+uthread.o: queue.h private.h uthread.h
 
-uthread.o: queue.h private.h
+sem.o: queue.h private.h sem.h
 
 preempt.o: uthread.h private.h
 

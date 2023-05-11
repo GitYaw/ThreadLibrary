@@ -13,7 +13,7 @@ struct semaphore {
 sem_t sem_create(size_t count)
 {
 	// Allocate space for semaphore
-	sem_t semaphore = (sem_t) malloc(sizeof(semaphore));
+	sem_t semaphore = (sem_t) malloc(sizeof(struct semaphore));
 	// Create blocked queue for threads (waitlist)
 	semaphore->blockedQueue = queue_create();
 	// Initialize count
