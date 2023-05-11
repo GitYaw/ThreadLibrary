@@ -249,7 +249,6 @@ void uthread_unblock(struct uthread_tcb *uthread)
 	if (uthread->state == BLOCKED) {
 		// Change state of thread to ready
 		uthread->state = READY;
-
 	}
 
 	// Accessing global queue, so disable
