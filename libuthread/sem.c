@@ -36,7 +36,29 @@ int sem_destroy(sem_t sem)
 
 int sem_down(sem_t sem)
 {
+	if (sem == NULL) {
+		return -1;
+	}
 	/* TODO Phase 3 */
+	// if count > 0, decrement
+	// else move uthread_current to waitlist
+		// call block on uthread
+
+	// check if resource is available
+	if (sem->count > 0) {
+		// decrease number of available resources
+		sem->count--;
+	} else {
+		struct uthread_tcb* thread = uthread_current();
+
+		// add thread to waiting queue
+		queue_enqueue(sem->blockedQueue, thread);
+
+		// block thread
+		uthread_block();
+	}
+
+	return 0;
 }
 
 int sem_up(sem_t sem)

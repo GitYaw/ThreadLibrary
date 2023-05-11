@@ -182,6 +182,16 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg)
 void uthread_block(void)
 {
 	/* TODO Phase 3 */
+	// set previous to thread (but don't put in any queue)
+	// set status of active thread to blocked -- right order from previous line?
+	// call context switch
+
+	previousThread = runningThread;
+
+	previousThread->state = BLOCKED;
+	// in semaphore blocked queue, don't add to ready queue
+
+	uthread_switch();
 }
 
 void uthread_unblock(struct uthread_tcb *uthread)
