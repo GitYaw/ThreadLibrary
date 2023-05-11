@@ -1,32 +1,34 @@
+## MAKEFILE ##
+
 # Target library
 lib := libuthread.a
 
-# will add more object files for next phases
-obj := queue.o
-
-# Compiler
-CC := gcc
-CFLAGS := -Wall 
-CFLAGS += -g
-
 all: $(lib)
 
-# ----- NOTES -----
-# creating a static library use this command:
-# ar rcs my_library.a file1.o file2.o
+# Define compilation toolchain
+CC	= gcc
 
-# $@: replaced by name of target
-# $<: replaced by name of first prerequisite/dependency
-# $^: replaced by names of all prerequisites
-# -----------------
+# General gcc options
+CFLAGS := -Wall
+CFLAGS += -Wextra # -Werror
+CFLAGS += -g # Debug flag
 
+# Application objects to compile
+objs := queue.o uthread.o sem.o preempt.o context.o
 
-## TODO: Phase 1
-$(lib): $(obj)
+$(lib): $(objs)
 	ar -rcs $@ $^
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
+sem.o: queue.h private.h
+
+uthread.o: queue.h private.h
+
+preempt.o: uthread.h private.h
+
+context.o: uthread.h private.h
+
 clean:
-	rm -f $(lib) $(obj)
+	rm -f *.o *.a *.out 
