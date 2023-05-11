@@ -22,7 +22,7 @@ void thread3(void *arg)
 	while (1) {
 		printf("Thread 3 Running\n");
 	}
-    printf("Thread 3 Begins\n");
+    printf("Thread 3 Ends\n");
 
 }
 
@@ -33,7 +33,7 @@ void thread2(void *arg)
 	while (1) {
 		printf("Thread 2 Running\n");
 	}
-    printf("Thread 2 Begins\n");
+    printf("Thread 2 Ends\n");
 }
 
 void thread1(void *arg)
