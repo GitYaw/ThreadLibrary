@@ -5,30 +5,49 @@ lib := libuthread.a
 
 all: $(lib)
 
+# Don't print the commands unless explicitly requested with `make V=1`
+ifneq ($(V),1)
+Q = @
+V = 0
+endif
+
 # Define compilation toolchain
 CC	= gcc
 
 # General gcc options
 CFLAGS := -Wall
-CFLAGS += -Wextra # -Werror
-CFLAGS += -g # Debug flag
+CFLAGS += -Wextra -Werror
+## Debug flag
+ifneq ($(D),1)
+CFLAGS	+= -O2
+else
+CFLAGS	+= -g
+endif
+## Dependency generation
+CFLAGS	+= -MMD
 
 # Application objects to compile
 objs := queue.o uthread.o sem.o preempt.o context.o
 
+# Include dependencies
+deps := $(patsubst %.o,%.d,$(objs))
+-include $(deps)
+
+# Rule for libuthread.a
 $(lib): $(objs)
 	ar -rcs $@ $^
 
-%.o: %.c %.h
-	$(CC) $(CFLAGS) -c -o $@ $<
+# Generic rule for compiling objects
+%.o: %.c
+	@echo "CC	$@"
+	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 
-sem.o: queue.h private.h
+# Cleaning rule
+clean: FORCE
+	@echo "CLEAN	$(CUR_PWD)"
+	$(Q)rm -rf $(objs) $(deps) $(lib)
 
-uthread.o: queue.h private.h
-
-preempt.o: uthread.h private.h
-
-context.o: uthread.h private.h
-
-clean:
-	rm -f *.o *.a *.out 
+# Keep object files around
+.PRECIOUS: %.o
+.PHONY: FORCE
+FORCE:
