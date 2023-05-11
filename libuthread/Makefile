@@ -1,32 +1,54 @@
+## MAKEFILE ##
+
 # Target library
 lib := libuthread.a
 
-# will add more object files for next phases
-obj := queue.o
-
-# Compiler
-CC := gcc
-CFLAGS := -Wall 
-CFLAGS += -g
-
 all: $(lib)
 
-# ----- NOTES -----
-# creating a static library use this command:
-# ar rcs my_library.a file1.o file2.o
+# Don't print the commands unless explicitly requested with `make V=1`
+ifneq ($(V),1)
+Q = @
+V = 0
+endif
 
-# $@: replaced by name of target
-# $<: replaced by name of first prerequisite/dependency
-# $^: replaced by names of all prerequisites
-# -----------------
+# Define compilation toolchain
+CC	= gcc
 
+# General gcc options
+CFLAGS := -Wall
+CFLAGS += -Wextra -Werror
+## Debug flag
+ifneq ($(D),1)
+CFLAGS	+= -O2
+else
+CFLAGS	+= -g
+endif
+## Dependency generation
+CFLAGS	+= -MMD
 
-## TODO: Phase 1
-$(lib): $(obj)
+# Application objects to compile
+objs := queue.o uthread.o preempt.o context.o
+# objs += sem.o
+
+# Include dependencies
+deps := $(patsubst %.o,%.d,$(objs))
+-include $(deps)
+
+# Rule for libuthread.a
+$(lib): $(objs)
 	ar -rcs $@ $^
 
-%.o: %.c %.h
-	$(CC) $(CFLAGS) -c -o $@ $<
+# Generic rule for compiling objects
+%.o: %.c
+	@echo "CC	$@"
+	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 
-clean:
-	rm -f $(lib) $(obj)
+# Cleaning rule
+clean: FORCE
+	@echo "CLEAN	$(CUR_PWD)"
+	$(Q)rm -rf $(objs) $(deps) $(lib)
+
+# Keep object files around
+.PRECIOUS: %.o
+.PHONY: FORCE
+FORCE:

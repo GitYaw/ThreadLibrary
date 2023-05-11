@@ -2,7 +2,8 @@
 programs := \
 	queue_tester_example.x \
 	uthread_hello.x \
-	uthread_yield.x
+	uthread_yield.x \
+	test_preempt.x
 
 # User-level thread library
 UTHREADLIB := libuthread
@@ -28,7 +29,8 @@ CUR_PWD := $(shell pwd)
 CC	= gcc
 
 # General gcc options
-CFLAGS	:= -Wall -Wextra 
+CFLAGS	:= -Wall 
+CFLAGS  += -Wextra -Werror
 CFLAGS	+= -pipe
 ## Debug flag
 ifneq ($(D),1)
@@ -76,4 +78,3 @@ clean: FORCE
 .PRECIOUS: %.o
 .PHONY: FORCE
 FORCE:
-
