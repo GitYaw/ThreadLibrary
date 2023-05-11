@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-/*
+/**
  * sem_t - Semaphore type
  *
  * A semaphore is a way to control access to a common resource by multiple
@@ -15,52 +15,52 @@
  */
 typedef struct semaphore *sem_t;
 
-/*
- * sem_create - Create semaphore
- * @count: Semaphore count
+/**
+ * sem_create - Create semaphore.
  *
- * Allocate and initialize a semaphore of internal count @count.
+ * Allocate and initialize a semaphore of internal count `count`.
  *
- * Return: Pointer to initialized semaphore. NULL in case of failure when
+ * @param count: Semaphore count
+ * @return Pointer to initialized semaphore. NULL in case of failure when
  * allocating the new semaphore.
  */
 sem_t sem_create(size_t count);
 
-/*
- * sem_destroy - Deallocate a semaphore
- * @sem: Semaphore to deallocate
+/**
+ * sem_destroy - Deallocate a semaphore.
  *
- * Deallocate semaphore @sem.
+ * Deallocate semaphore `sem`.
  *
- * Return: -1 if @sem is NULL or if other threads are still being blocked on
- * @sem. 0 is @sem was successfully destroyed.
+ * @param sem: Semaphore to deallocate
+ * @return -1 if `sem` is NULL or if other threads are still being blocked on
+ * `sem`. 0 is `sem` was successfully destroyed.
  */
 int sem_destroy(sem_t sem);
 
-/*
- * sem_down - Take a semaphore
- * @sem: Semaphore to take
+/**
+ * sem_down - Take a semaphore.
  *
- * Take a resource from semaphore @sem.
+ * Take a resource from semaphore `sem`.
  *
  * Taking an unavailable semaphore will cause the caller thread to be blocked
  * until the semaphore becomes available.
  *
- * Return: -1 if @sem is NULL. 0 if semaphore was successfully taken.
+ * @param sem: Semaphore to take
+ * @return -1 if `sem` is NULL. 0 if semaphore was successfully taken.
  */
 int sem_down(sem_t sem);
 
-/*
- * sem_up - Release a semaphore
- * @sem: Semaphore to release
+/**
+ * sem_up - Release a semaphore.
  *
- * Release a resource to semaphore @sem.
+ * Release a resource to semaphore `sem`.
  *
- * If the waiting list associated to @sem is not empty, releasing a resource
+ * If the waiting list associated to `sem` is not empty, releasing a resource
  * also causes the first thread (i.e. the oldest) in the waiting list to be
  * unblocked.
  *
- * Return: -1 if @sem is NULL. 0 if semaphore was successfully released.
+ * @param sem: Semaphore to release
+ * @return -1 if `sem` is NULL. 0 if semaphore was successfully released.
  */
 int sem_up(sem_t sem);
 

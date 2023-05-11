@@ -25,13 +25,15 @@ CFLAGS += -Wextra # -Werror
 CFLAGS += -g # Debug flag
 
 # Application objects to compile
-objs := queue.o uthread.o preempt.o context.o
+objs := queue.o uthread.o sem.o preempt.o context.o
 
 $(lib): $(objs)
 	ar -rcs $@ $^
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c -o $@ $<
+
+sem.o: queue.h private.h
 
 uthread.o: queue.h private.h
 
