@@ -1,5 +1,6 @@
 # Target programs
 programs := \
+	queue_simple.x \
 	queue_tester.x \
 	uthread_hello.x \
 	uthread_yield.x \
