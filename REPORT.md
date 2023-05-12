@@ -1,5 +1,3 @@
-# 
-
 # Report on ECS150 Project 2: User-Level Thread Library
 
 by Yaw Mireku and Jessica Trans
