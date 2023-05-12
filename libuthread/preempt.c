@@ -16,7 +16,7 @@
 #define HZ 100
 
 static struct itimerval timer;
-struct sigaction sa;
+static struct sigaction sa;
 static sigset_t block;
 
 /*

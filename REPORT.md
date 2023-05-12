@@ -47,4 +47,4 @@ This tester was not provided to us, so we had to create a C program called test_
 We tested the queue API on our local machines while the other C programs required a Linux environment, meaning we would have to work on the CSIF computers. We would make sure to enter “make clean” then “make all” for both the apps and libuthread directories to ensure that our program is generating the proper executables. Once it has executed successfully, the next step was running the .x files in the apps directory. Unit testing was an efficient method of testing all the possible usage scenarios for our C programs in the libuthread directory.
 
 ## References
-We used Joel Porquet-Lupine’s lecture and discussion slides as well as gnu libc sources. 
+We used Joel Porquet-Lupine’s lecture and discussion slides as well as GNU libc sources. "Process Scheduling", "Concurrency Threads", and "Project 2" slides provided useful examples in understanding how to implement the APIs and testers.
