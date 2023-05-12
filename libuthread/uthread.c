@@ -10,7 +10,7 @@
 #include "uthread.h"
 #include "queue.h"
 
-/// <-- remove triple-slash comments
+
 enum State {RUNNING, READY, BLOCKED, EXITED};
 typedef enum State state_t;
 
