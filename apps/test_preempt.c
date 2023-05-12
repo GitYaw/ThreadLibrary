@@ -4,8 +4,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
-#include <assert.h>
-#include <time.h>
 
 #include <uthread.h>
 
