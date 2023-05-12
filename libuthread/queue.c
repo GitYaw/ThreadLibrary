@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Look at header file to find API documentation
 #include "queue.h"
 
 
@@ -52,7 +53,6 @@ int node_destroy(node_t node)
 	if (node == NULL) {
 		return -1;
 	}
-
 	free(node);
 
 	return 0;
@@ -60,6 +60,7 @@ int node_destroy(node_t node)
 
 /* Queue */
 
+// Think of linked lists, First In First Out Queue
 struct queue {
 	node_t front;
 	node_t back;
@@ -68,22 +69,27 @@ struct queue {
 
 queue_t queue_create(void)
 {
+	// Allocate memory for queue object
 	queue_t queue = malloc(sizeof(struct queue));
 	if (queue == NULL) {
-		return NULL; // memory allocation error
+		// Memory allocation error
+		return NULL; 
 	}
 
+	// Create queue
 	queue->front = queue->back = NULL;
 	queue->size = 0;
+
 	return queue;
 }
 
 int queue_destroy(queue_t queue)
 {
 	if (queue == NULL || queue->size != 0) {
-		return -1; // queue must be empty before deallocating
+		// Queue must be empty before deallocating
+		return -1; 
 	}
-
+	// Deallocate memory
 	free(queue);
 
 	return 0;
@@ -91,51 +97,58 @@ int queue_destroy(queue_t queue)
 
 int queue_enqueue(queue_t queue, void *data)
 {
+	// Check for memory allocation error
 	if (queue == NULL || data == NULL) {
 		return -1;
 	}
 
 	node_t newNode = node_create(data);
 	if (newNode == NULL) {
-		// memory allocation error
+		// Memory allocation error
 		return -1;
 	}
 
-	// add new node to back of queue
+	// Add new node to back of queue
 	if (queue->back == NULL) {
-		// empty queue
+		// Empty queue
 		queue->front = newNode;
 	} else {
-		// non-empty queue
+		// Non-empty queue
 		queue->back->next = newNode;
 	}
-	// set back of queue to new node
+	// Set back of queue to new node
 	queue->back = newNode;
 
+	// Update queue size
 	queue->size++;
 	
+	// Successfully enqueued in queue
 	return 0;
 }
 
 int queue_dequeue(queue_t queue, void **data)
 {
 	if (queue == NULL || data == NULL || queue->size == 0) {
-		return -1; // queue must contain node before dequeueing
+		// Queue must contain node before dequeueing
+		return -1; 
 	}
 
 	// Get front node and store data
 	node_t frontNode = queue->front;
+	// Dequeue oldest item in queue
 	*data = frontNode->data;
 
 	// Set new front node
 	queue->front = frontNode->next;
+	// Deallocate memory
 	free(frontNode);
 
 	if (queue->front == NULL) {
-		// empty queue, back just removed
+		// Empty queue, back just removed
 		queue->back = NULL;
 	}
 
+	// Update queue size
 	queue->size--;
 	
 	return 0;
@@ -147,31 +160,32 @@ int queue_delete(queue_t queue, void *data)
 		return -1;
 	}
 	
-	// special case if first node (no previous node)
+	// Special case if first node (no previous node)
 	if (queue->front->data == data) {
-		queue_dequeue(queue, &data); // deleting first node is equivalent of dequeuing (data not used)
+		// Deleting first node is equivalent of dequeuing (data not used)
+		queue_dequeue(queue, &data); 
 		return 0;
 	}
 
 	node_t node = queue->front;
 	node_t back = queue->back;
 
-	// in linked list, node must be deleted using the preceding node
+	// In linked list, node must be deleted using the preceding node
 
 	while (node != back) {
-		// get next node in queue
+		// Get next node in queue
 		node_t nextNode = node->next;
 
+		// Find right node to delete
 		if (nextNode->data == data) {
-			// node to delete, set node before to skip and point to node after
+			// Mode to delete, set node before to skip and point to node after
 			node->next = nextNode->next;
-			// deallocate node
+			// Deallocate node
 			node_destroy(nextNode);
-
+			// Decrement queue size
 			queue->size--;
 			return 0;
 		}
-
 		node = nextNode;
 	}
 
@@ -186,11 +200,11 @@ int queue_iterate(queue_t queue, queue_func_t func)
 
 	node_t node = queue->front;
 	while (node != NULL) {
-		// queue must be delete-resistant, get next node before calling function
+		// Queue must be delete-resistant, get next node before calling function
 		node_t nextNode = node->next;
-		// call callback function on data item
+		// Call callback function on data item
 		func(queue, node->data);
-		// proceed to next node
+		// Proceed to next node
 		node = nextNode;
 	}
 	

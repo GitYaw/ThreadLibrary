@@ -68,7 +68,7 @@ void preempt_stop(void)
 	// Restores previous timer 
 	setitimer(ITIMER_VIRTUAL, &timer, NULL);
 
-	// use SIG_DFL to terminate the process since it restores default behavior
+	// Use SIG_DFL to terminate the process since it restores default behavior
 	sa.sa_handler = SIG_DFL;
 	sa.sa_flags = 0;
 	sigemptyset(&sa.sa_mask);

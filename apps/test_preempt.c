@@ -1,9 +1,9 @@
+#include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <assert.h>
 #include <time.h>
+#include <unistd.h>
 
 #include <uthread.h>
 

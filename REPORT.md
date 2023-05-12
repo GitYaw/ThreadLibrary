@@ -9,7 +9,7 @@ This project consists of four phases: creating a queue, uthread, and semaphore A
 
 ## Makefile
 
-Our Makefile in the libuthread directory was similar to the one provided in the apps directory. It will create a static library archive called libuthread/libuthread.a by including the rule “ar -rcs $@ $^”. This website, http://tldp.org/HOWTO/Program-Library-HOWTO/static-libraries.html, helped implement this.
+Our Makefile in the libuthread directory was similar to the one provided in the apps directory. It will create a static library archive called libuthread/libuthread.a by including the rule: ```ar -rcs $@ $^```. 
 
 ## Phase 1 - queue API
 
@@ -32,11 +32,25 @@ There are two testers for this API called uthread_hello.c and uthread_yield.c. T
 
 ## Phase 3 - semaphore API
 
+This API is utilized in concurrent programming to control access to shared resources among multiple threads. They can maintain an internal counter that keeps track of the number of available resources. Semaphores are very flexible when it comes to managing resource sharing and synchronization in concurrent programs. This phase helped us grasp the understanding of semaphore functions that are used to ensure efficient synchronization among several threads. In the sem.c file, it is important to include preempt_disable() and preempt_enable() when accessing or modifying a shared data structure.
+
 ### Semaphore Tester
+
+There are a couple of testing programs provided by the professor in order to test our implementation of the semaphore API. Some corner cases had to be address in order to avoid any starvation. This highlights how semaphores can be prone to deadlocks and resource starvation if not implemented properly.
 
 ## Phase 4 - preemption
 
+In order for this to be implemented properly, we modified both preempt.c and uthread.c files. The preemption API prevents dangerous behavior such as never calling the function uthread_yield() or blocking on a semaphore. 
 
+After referencing from the gnu libc source, the best way to create the preempt_start() function was to install a signal handler that receives SIGVTALRM and configure a timer that sends this alarm out every hundred times per second. The two data structures used were itimerval for the timer and sigaction for the signal handler. Once we confirmed that preempt is true, the program would create a structure for the new action and set the alarm. ITIMER_VIRTUAL is an interval timer that is associated with the process’s virtual CPU time, and not in real-time. This value would decrement over time when the process is running in user mode, meaning that it would send the SIGVTALRM signal when the timer reaches zero. 
+
+The function preempt_stop() would use similar lines of code. It involves restoring the previous timer as well as using SIG_DFL to terminate the process after restoring to its default behavior. We incorporated another function that serves as a timer interrupt handler, essentially calling the uthread_yield() function after it checks for if the alarm variable matches SIGVTALRM. 
+
+The last two are the preempt_disable() and preempt_enable() functions. They both call the same function sigprocmask() which modifies the signal mask by blocking and unblocked signals. Whenever preempt is disable, then this function would block the signal. On the other hand, in preempt_enable(), it unblocks the signal.
+
+In the uthread.c file, preempt_start() has to be called in the beginning of uthread_run() in order to set up preemption for the uthread library. The same applies for preempt_stop() which has to be called before uthread_run() returns. 
+
+Whenever the global data structure queue is accessed, it is a good practice to disable preemption in order to prevent any errors or bugs using preempt_disable(). For instance, when multiple threads are executed concurrently, they can be preempted. Whenever a thread is preempting while modifying a shared data structure like queue, it can lead to race conditions and data corruption issues. After modifying the queue, then we can enable preempt using preempt_enable().
 
 ### Preempt Tester
 
@@ -47,4 +61,5 @@ This tester was not provided to us, so we had to create a C program called test_
 We tested the queue API on our local machines while the other C programs required a Linux environment, meaning we would have to work on the CSIF computers. We would make sure to enter “make clean” then “make all” for both the apps and libuthread directories to ensure that our program is generating the proper executables. Once it has executed successfully, the next step was running the .x files in the apps directory. Unit testing was an efficient method of testing all the possible usage scenarios for our C programs in the libuthread directory.
 
 ## References
-We used Joel Porquet-Lupine’s lecture and discussion slides as well as GNU libc sources. "Process Scheduling", "Concurrency Threads", and "Project 2" slides provided useful examples in understanding how to implement the APIs and testers.
+
+We used Joel Porquet-Lupine’s lecture and discussion slides as well as GNU libc sources and statics libraries. The provided resources in the instructions helped with figuring out what to include in the programs. "Process Scheduling", "Concurrency Threads", and "Project 2" slides provided useful examples in understanding how to implement the APIs and testers.
